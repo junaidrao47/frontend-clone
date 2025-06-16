@@ -38,21 +38,31 @@ const VISIBLE_COUNT = 4;
 const fetcher = async (url: string): Promise<CategoryApiResponse> => {
   const res = await fetch(url, { cache: "force-cache" });
   if (!res.ok) {
+    console.error("Failed to fetch categories", res.status, res.statusText);
     throw new Error("Failed to fetch categories");
   }
   const json = await res.json();
+  console.log("Fetched categories data:", json);
   return json;
 };
 
 // Use the image URL directly (absolute URL from Strapi)
 function getImageUrl(image?: StrapiImage): string {
-  if (!image) return FALLBACK_IMAGE;
+  if (!image) {
+    console.warn("No image object, using fallback.");
+    return FALLBACK_IMAGE;
+  }
   const img =
     image.formats?.small?.url ||
     image.formats?.thumbnail?.url ||
     image.url ||
     null;
-  return img || FALLBACK_IMAGE;
+  if (!img) {
+    console.warn("No image URL found in formats or url, using fallback.", image);
+    return FALLBACK_IMAGE;
+  }
+  console.log("Resolved image URL:", img, "for image:", image);
+  return img;
 }
 
 type Category = {
@@ -75,11 +85,15 @@ const HeroSection2: React.FC = () => {
     }
   );
 
-  const categories: Category[] = (data?.data || []).map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    imageUrl: getImageUrl(cat.Image),
-  }));
+  const categories: Category[] = (data?.data || []).map((cat) => {
+    const imageUrl = getImageUrl(cat.Image);
+    console.log("Category:", cat.name, "Image URL:", imageUrl);
+    return {
+      id: cat.id,
+      name: cat.name,
+      imageUrl,
+    };
+  });
 
   React.useEffect(() => {
     if (startIdx > Math.max(categories.length - VISIBLE_COUNT, 0)) {
@@ -225,6 +239,9 @@ const HeroSection2: React.FC = () => {
                           background: "#f7f7f7",
                         }}
                         priority={false}
+                        onError={() => {
+                          console.error("Image failed to load for category:", cat.name, "URL:", cat.imageUrl);
+                        }}
                       />
                       <div
                         className="font-bold text-base text-center mt-2 uppercase tracking-wide"
