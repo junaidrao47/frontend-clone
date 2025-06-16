@@ -81,11 +81,12 @@ const HeroSection2: React.FC = () => {
   );
 
   const categories: Category[] = (data?.data || []).map((cat) => {
-    const image = cat.attributes.Image?.data?.attributes;
+    const image =
+      cat.attributes?.Image?.data?.attributes ?? undefined;
     const imageUrl = getImageUrl(image);
     return {
       id: cat.id,
-      name: cat.attributes.name,
+      name: cat.attributes?.name ?? "No Name",
       imageUrl,
     };
   });
