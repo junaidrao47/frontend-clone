@@ -44,23 +44,15 @@ const fetcher = async (url: string): Promise<CategoryApiResponse> => {
   return json;
 };
 
+// Use the image URL directly (absolute URL from Strapi)
 function getImageUrl(image?: StrapiImage): string {
-  if (!image) {
-    return FALLBACK_IMAGE;
-  }
+  if (!image) return FALLBACK_IMAGE;
   const img =
     image.formats?.small?.url ||
     image.formats?.thumbnail?.url ||
     image.url ||
     null;
-  if (img && img.startsWith("/")) {
-    if (API_URL) {
-      const url = `${API_URL.replace(/\/api$/, "")}${img}`;
-      return url;
-    }
-    return img;
-  }
-  return FALLBACK_IMAGE;
+  return img || FALLBACK_IMAGE;
 }
 
 type Category = {
