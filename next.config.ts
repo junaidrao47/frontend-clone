@@ -3,13 +3,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "sparkling-freedom-cdd5a0b218.strapiapp.com",
+        hostname: "sparkling-freedom-cdd5a0b218.media.strapiapp.com",
         port: "",
         pathname: "/**",
       },
     ],
   },
-  crossOrigin : "anonymous",
 };
 
 export default nextConfig;

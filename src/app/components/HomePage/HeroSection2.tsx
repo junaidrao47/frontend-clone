@@ -27,8 +27,14 @@ type StrapiImage = {
 type CategoryApiResponse = {
   data: Array<{
     id: number;
-    name: string;
-    Image?: StrapiImage;
+    attributes: {
+      name: string;
+      Image?: {
+        data?: {
+          attributes: StrapiImage;
+        };
+      };
+    };
   }>;
 };
 
@@ -38,31 +44,20 @@ const VISIBLE_COUNT = 4;
 const fetcher = async (url: string): Promise<CategoryApiResponse> => {
   const res = await fetch(url, { cache: "force-cache" });
   if (!res.ok) {
-    console.error("Failed to fetch categories", res.status, res.statusText);
     throw new Error("Failed to fetch categories");
   }
   const json = await res.json();
-  console.log("Fetched categories data:", json);
   return json;
 };
 
-// Use the image URL directly (absolute URL from Strapi)
 function getImageUrl(image?: StrapiImage): string {
-  if (!image) {
-    console.warn("No image object, using fallback.");
-    return FALLBACK_IMAGE;
-  }
-  const img =
+  if (!image) return FALLBACK_IMAGE;
+  return (
     image.formats?.small?.url ||
     image.formats?.thumbnail?.url ||
     image.url ||
-    null;
-  if (!img) {
-    console.warn("No image URL found in formats or url, using fallback.", image);
-    return FALLBACK_IMAGE;
-  }
-  console.log("Resolved image URL:", img, "for image:", image);
-  return img;
+    FALLBACK_IMAGE
+  );
 }
 
 type Category = {
@@ -86,11 +81,11 @@ const HeroSection2: React.FC = () => {
   );
 
   const categories: Category[] = (data?.data || []).map((cat) => {
-    const imageUrl = getImageUrl(cat.Image);
-    console.log("Category:", cat.name, "Image URL:", imageUrl);
+    const image = cat.attributes.Image?.data?.attributes;
+    const imageUrl = getImageUrl(image);
     return {
       id: cat.id,
-      name: cat.name,
+      name: cat.attributes.name,
       imageUrl,
     };
   });
@@ -240,6 +235,9 @@ const HeroSection2: React.FC = () => {
                         }}
                         priority={false}
                         onError={() => {
+                          // For debugging, log if image fails to load
+                          // (You can remove this in production)
+                          // eslint-disable-next-line no-console
                           console.error("Image failed to load for category:", cat.name, "URL:", cat.imageUrl);
                         }}
                       />
