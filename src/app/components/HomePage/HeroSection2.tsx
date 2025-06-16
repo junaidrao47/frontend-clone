@@ -55,7 +55,7 @@ function getImageUrl(image?: StrapiImage): string {
     null;
   if (img && img.startsWith("/")) {
     if (API_URL) {
-      const url = `${API_URL.replace(/\/api$/, "")}${img}`;
+      const url = `${img}`;
       return url;
     }
     return img;
